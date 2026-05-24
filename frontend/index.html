@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoiceAI — Outbound Agent Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+
+  <!-- ── Ambient background ──────────────────────────────────────────── -->
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-orb orb-3"></div>
+  <div class="bg-grid"></div>
+
+  <!-- ── Toast notifications ────────────────────────────────────────── -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       HEADER
+  ════════════════════════════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-inner">
+
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
+        <div>
+          <span class="logo-name">VoiceAI</span>
+          <span class="logo-tagline">Outbound Agent Platform</span>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div class="global-pill" id="globalPill">
+          <span class="gp-dot" id="gpDot"></span>
+          <span id="gpLabel">System Ready</span>
+        </div>
+      </div>
+
+      <div class="service-badges">
+        <div class="sb vapi">
+          <span class="sb-indicator"></span>
+          <span>Vapi</span>
+        </div>
+        <div class="sb stt">
+          <span class="sb-indicator"></span>
+          <span>Deepgram</span>
+        </div>
+        <div class="sb llm">
+          <span class="sb-indicator"></span>
+          <span>GPT-3.5</span>
+        </div>
+        <div class="sb tts">
+          <span class="sb-indicator"></span>
+          <span>OpenAI TTS</span>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       MAIN GRID
+  ════════════════════════════════════════════════════════════════════ -->
+  <main class="main-grid">
+
+    <!-- ════════════════════════════════════════
+         LEFT — CONFIGURATION PANEL
+    ════════════════════════════════════════ -->
+    <aside class="card config-card">
+
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Campaign Setup</h2>
+          <p class="card-subtitle">Configure your outbound AI call</p>
+        </div>
+        <div class="ready-chip">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Ready
+        </div>
+      </div>
+
+      <form id="callForm" autocomplete="off" novalidate>
+
+        <!-- Browser call info -->
+        <div class="form-block">
+          <div class="browser-call-info">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Live browser call via Vapi WebRTC — microphone required</span>
+          </div>
+        </div>
+
+        <!-- Campaign type -->
+        <div class="form-block">
+          <label class="form-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Campaign Type
+          </label>
+          <div class="scenario-grid">
+
+            <label class="sc-card" id="sc-appt">
+              <input type="radio" name="scenario" value="appointment_reminder" hidden />
+              <div class="sc-icon-box appt">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>
+              </div>
+              <div class="sc-body">
+                <span class="sc-name">Appointment Reminder</span>
+                <span class="sc-desc">Medical / clinic visit confirmation</span>
+              </div>
+              <div class="sc-check">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </label>
+
+            <label class="sc-card" id="sc-lead">
+              <input type="radio" name="scenario" value="lead_qualification" hidden />
+              <div class="sc-icon-box lead">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+              </div>
+              <div class="sc-body">
+                <span class="sc-name">Lead Qualification</span>
+                <span class="sc-desc">Sales pipeline qualification</span>
+              </div>
+              <div class="sc-check">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+        <!-- ── Appointment fields ── -->
+        <div id="fields-appointment_reminder" class="detail-block hidden">
+          <div class="detail-block-title">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Appointment Details
+          </div>
+          <div class="form-block">
+            <label class="form-label">Patient Name</label>
+            <input type="text" id="ar-patientName" class="text-input" placeholder="John Smith" />
+          </div>
+          <div class="form-row">
+            <div class="form-block">
+              <label class="form-label">Date</label>
+              <input type="date" id="ar-appointmentDate" class="text-input" />
+            </div>
+            <div class="form-block">
+              <label class="form-label">Time</label>
+              <input type="time" id="ar-appointmentTime" class="text-input" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-block">
+              <label class="form-label">Doctor</label>
+              <input type="text" id="ar-doctorName" class="text-input" placeholder="Dr. Sarah Johnson" />
+            </div>
+            <div class="form-block">
+              <label class="form-label">Department</label>
+              <input type="text" id="ar-department" class="text-input" placeholder="General Medicine" />
+            </div>
+          </div>
+          <div class="form-block">
+            <label class="form-label">Clinic / Hospital</label>
+            <input type="text" id="ar-clinicName" class="text-input" placeholder="HealthFirst Medical Center" />
+          </div>
+        </div>
+
+        <!-- ── Lead fields ── -->
+        <div id="fields-lead_qualification" class="detail-block hidden">
+          <div class="detail-block-title">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Lead Details
+          </div>
+          <div class="form-block">
+            <label class="form-label">Lead Name</label>
+            <input type="text" id="lq-leadName" class="text-input" placeholder="Jane Doe" />
+          </div>
+          <div class="form-block">
+            <label class="form-label">Product / Service Interest</label>
+            <input type="text" id="lq-productInterest" class="text-input" placeholder="Cloud CRM software" />
+          </div>
+          <div class="form-block">
+            <label class="form-label">Company</label>
+            <input type="text" id="lq-companyName" class="text-input" placeholder="Acme Corp" />
+          </div>
+        </div>
+
+        <!-- CTA button -->
+        <button type="submit" class="cta-btn" id="startCallBtn" disabled>
+          <span class="cta-inner">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            <span id="ctaLabel">Initiate Call</span>
+          </span>
+          <span class="cta-shimmer"></span>
+        </button>
+
+      </form>
+    </aside>
+
+    <!-- ════════════════════════════════════════
+         RIGHT — LIVE MONITOR PANEL
+    ════════════════════════════════════════ -->
+    <section class="card live-card">
+
+      <div class="card-header">
+        <h2 class="card-title">Live Monitor</h2>
+        <div class="live-badge hidden" id="liveBadge">
+          <span class="live-dot-anim"></span>
+          LIVE
+        </div>
+      </div>
+
+      <!-- AI pipeline strip -->
+      <div class="pipeline-strip">
+        <div class="ps-node" id="psn-vapi">
+          <div class="ps-icon ps-vapi">V</div>
+          <span class="ps-label">Vapi</span>
+          <span class="ps-dot" id="psd-vapi"></span>
+        </div>
+        <div class="ps-line" id="psl-1"></div>
+        <div class="ps-node" id="psn-stt">
+          <div class="ps-icon ps-stt">D</div>
+          <span class="ps-label">Deepgram STT</span>
+          <span class="ps-dot" id="psd-stt"></span>
+        </div>
+        <div class="ps-line" id="psl-2"></div>
+        <div class="ps-node" id="psn-llm">
+          <div class="ps-icon ps-llm">G</div>
+          <span class="ps-label">GPT-3.5</span>
+          <span class="ps-dot" id="psd-llm"></span>
+        </div>
+        <div class="ps-line" id="psl-3"></div>
+        <div class="ps-node" id="psn-tts">
+          <div class="ps-icon ps-tts">T</div>
+          <span class="ps-label">OpenAI TTS</span>
+          <span class="ps-dot" id="psd-tts"></span>
+        </div>
+      </div>
+
+      <!-- ── IDLE VIEW ── -->
+      <div id="idleView" class="idle-view">
+        <div class="idle-orb-wrap">
+          <div class="idle-ring ir-outer"></div>
+          <div class="idle-ring ir-mid"></div>
+          <div class="idle-ring ir-inner"></div>
+          <div class="idle-core">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          </div>
+        </div>
+        <h3 class="idle-title">No Active Call</h3>
+        <p class="idle-desc">Select a campaign on the left and click<br/><strong>Initiate Call</strong> to launch your AI agent.</p>
+        <div class="idle-features">
+          <div class="if-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Real-time STT
+          </div>
+          <div class="if-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Context-aware LLM
+          </div>
+          <div class="if-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
+            Natural TTS Voice
+          </div>
+          <div class="if-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            Barge-in Support
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ACTIVE CALL VIEW ── -->
+      <div id="activeView" class="active-view hidden">
+
+        <!-- Circular call visualization -->
+        <div class="call-viz" id="callViz">
+          <div class="cv-ring cvr-1" id="cvr1"></div>
+          <div class="cv-ring cvr-2" id="cvr2"></div>
+          <div class="cv-ring cvr-3" id="cvr3"></div>
+          <div class="cv-center" id="cvCenter">
+            <div class="cv-avatar">A</div>
+            <div class="cv-label">AI Agent</div>
+          </div>
+        </div>
+
+        <!-- Call info row -->
+        <div class="call-info-row">
+          <div class="ci-left">
+            <span class="ci-name">Alex — AI Agent</span>
+            <span class="ci-scenario" id="ciScenario">—</span>
+          </div>
+          <div class="ci-right">
+            <div class="ci-status-pill" id="ciStatusPill">
+              <span class="ci-dot" id="ciDot"></span>
+              <span id="ciLabel">Initiating…</span>
+            </div>
+            <div class="ci-timer-wrap">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span id="ciTimer">0:00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Waveform -->
+        <div class="waveform" id="waveform">
+          <div class="wf-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/><path d="M19.07 4.93a10 10 0 010 14.14"/></svg>
+            Agent speaking
+          </div>
+          <div class="wf-bars">
+            <span class="wb"></span><span class="wb"></span><span class="wb"></span>
+            <span class="wb"></span><span class="wb"></span><span class="wb"></span>
+            <span class="wb"></span><span class="wb"></span><span class="wb"></span>
+            <span class="wb"></span><span class="wb"></span><span class="wb"></span>
+            <span class="wb"></span><span class="wb"></span><span class="wb"></span>
+            <span class="wb"></span><span class="wb"></span><span class="wb"></span>
+            <span class="wb"></span><span class="wb"></span><span class="wb"></span>
+            <span class="wb"></span><span class="wb"></span><span class="wb"></span>
+          </div>
+        </div>
+
+        <!-- Transcript -->
+        <div class="chat-box">
+          <div class="chat-header">
+            <div class="chat-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Transcript
+            </div>
+            <span class="chat-count" id="chatCount">0 exchanges</span>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-empty">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Awaiting conversation…
+            </div>
+          </div>
+        </div>
+
+        <!-- End call -->
+        <button class="end-call-btn" id="endCallBtn">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.42 19.42 0 01-3.33-2.67m-2.67-3.34a19.79 19.79 0 01-3.07-8.63A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg>
+          End Call
+        </button>
+
+      </div>
+
+    </section>
+  </main>
+
+  <script type="module" src="/static/app.js?v=2"></script>
+</body>
+</html>
