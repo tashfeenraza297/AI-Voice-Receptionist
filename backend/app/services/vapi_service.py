@@ -39,7 +39,7 @@ class VapiService:
             "assistant": {
                 "model": {
                     "provider": "openai",
-                    "model": "gpt-3.5-turbo",
+                    "model": "gpt-4o-mini",
                     "messages": [{"role": "system", "content": system_prompt}],
                     "temperature": 0.7,
                     "maxTokens": 150,

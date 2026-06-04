@@ -1,8 +1,14 @@
 # Voice AI Agent
 
-An outbound voice AI agent that conducts natural, real-time conversations directly in the browser. Supports two campaign scenarios — **Appointment Reminder** and **Lead Qualification** — powered by a full STT → LLM → TTS pipeline orchestrated by [Vapi](https://vapi.ai).
+Businesses lose leads and miss appointments because manual follow-up doesn't scale. This AI voice agent handles outbound calls automatically — confirming appointments and qualifying leads — while answering any question a caller has about the business, without any human involvement.
 
-Built as part of a technical assessment. The agent handles real conversations, maintains context across turns, and gracefully resolves each scenario (confirm / reschedule / cancel for appointments; qualify and offer a demo for leads).
+Built on a full **STT → LLM → TTS** pipeline via [Vapi](https://vapi.ai), with a glassmorphism single-page dashboard for live call monitoring, real-time transcripts, automatic call summaries, and session history logs.
+
+**Two call goals, powered by a shared business knowledge base:**
+- **Appointment Reminder** — confirms, reschedules, or cancels a booking
+- **Lead Qualification** — qualifies prospects and books a demo or consultation
+
+Every call is grounded in a **Business Knowledge Base** (services, hours, pricing, policies) injected into the agent's prompt — a RAG-style pattern that lets the agent answer *any* caller question about the business mid-call (hours, location, insurance, pricing). One-click **industry presets** (dental, medical, SaaS, real estate, salon) let you load a fully-configured sample business instantly for demos.
 
 ---
 
@@ -68,7 +74,7 @@ Your voice (browser mic)
 |---|---|---|
 | Voice AI Platform | [Vapi](https://vapi.ai) | Orchestrates telephony, STT, LLM, TTS in one API |
 | STT | Deepgram Nova-2 (via Vapi) | Real-time speech-to-text |
-| LLM | GPT-3.5-turbo (via Vapi) | Conversation intelligence |
+| LLM | GPT-4o-mini (via Vapi) | Conversation intelligence — fast and capable |
 | TTS | OpenAI TTS — "nova" (via Vapi) | Natural voice synthesis |
 | Backend | FastAPI + Python | Scenario config, REST API |
 | Frontend | Vanilla JS + Vapi Web SDK | Browser WebRTC call interface |
@@ -158,34 +164,34 @@ Open **http://localhost:8000** — no ngrok required.
 
 ---
 
-## Scenarios
+## How It Works
+
+Every call combines **two inputs**:
+
+1. **Business Profile** (shared) — the business name + a free-text knowledge base (services, hours, location, pricing, policies, FAQs). This is injected into the agent's system prompt so it can answer *any* caller question about the business during the call.
+2. **Call Goal** — the objective of this specific call (appointment reminder or lead qualification) plus the call-specific details.
+
+This separation means one business profile powers both call types, and the agent stays "in character" for that business no matter what the caller asks.
 
 ### Appointment Reminder
-**AI Persona:** Alex, patient coordinator
+**AI Persona:** Alex, scheduling coordinator
 
-**Conversation flow:**
-1. Confirm speaking with the right patient
-2. Remind about appointment (date, time, doctor, department)
+1. Confirm speaking with the right customer
+2. Remind about the appointment (date, time, provider, service)
 3. Ask to confirm, reschedule, or cancel
-4. Handle the response naturally and close the call
-
-**Example details to test with:**
-- Patient: John Smith | Doctor: Dr. Sarah Johnson | Cardiology | May 30, 2026 at 10:00 AM
-
----
+4. Answer any business questions from the knowledge base, then close warmly
 
 ### Lead Qualification
-**AI Persona:** Jordan, sales development representative
+**AI Persona:** Jordan, sales representative
 
-**Conversation flow:**
 1. Confirm speaking with the right lead
-2. Introduce purpose of the call
+2. Introduce the purpose of the call
 3. Ask qualifying questions (timeline, budget, pain points)
-4. Offer a product demo if interest confirmed
-5. Close gracefully regardless of outcome
+4. Answer pricing/feature questions from the knowledge base
+5. Offer a demo if interest is confirmed, then close gracefully
 
-**Example details to test with:**
-- Lead: Sarah Johnson | Product: AI customer support chatbot | TechVision Inc
+### One-Click Demo Presets
+The UI ships with five fully-configured sample businesses — **Dental Clinic, Medical Center, SaaS Company, Real Estate Agency, Salon & Spa**. Selecting one auto-fills the business profile, knowledge base, and call details, so a prospect can experience a working agent for their industry in a single click.
 
 ---
 

@@ -89,6 +89,30 @@ class _WebConfigRequest(BaseModel):
     scenario_details: Dict[str, Any] = {}
 
 
+# Client-side tool — Vapi delivers the call to the browser (no server URL),
+# where the frontend updates the live calendar. See app.js handleToolCall().
+_BOOK_APPOINTMENT_TOOL = {
+    "type": "function",
+    "function": {
+        "name": "book_appointment",
+        "description": (
+            "Finalize an appointment booking. Call this ONLY after the customer has "
+            "confirmed their name, the service, and an available time slot."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "customer_name": {"type": "string", "description": "The customer's name"},
+                "service": {"type": "string", "description": "The service being booked"},
+                "time": {"type": "string", "description": "The chosen time slot, e.g. '2:00 PM'"},
+                "date": {"type": "string", "description": "The day, e.g. 'today'"},
+            },
+            "required": ["customer_name", "service", "time"],
+        },
+    },
+}
+
+
 @router.post("/web-config")
 async def get_web_config(body: _WebConfigRequest) -> Dict[str, Any]:
     """
@@ -96,31 +120,47 @@ async def get_web_config(body: _WebConfigRequest) -> Dict[str, Any]:
     can start a WebRTC call without touching the Private key.
     """
     scenario = Scenario(type=body.scenario_type, details=body.scenario_details)
-    return {
-        "public_key": settings.VAPI_PUBLIC_KEY,
-        "assistant": {
-            "model": {
-                "provider": "openai",
-                "model": "gpt-3.5-turbo",
-                "messages": [{"role": "system", "content": scenario.get_system_prompt()}],
-                "temperature": 0.7,
-                "maxTokens": 150,
-            },
-            "voice": {
-                "provider": "openai",
-                "voiceId": "nova",
-            },
-            "transcriber": {
-                "provider": "deepgram",
-                "model": "nova-2",
-                "language": "en",
-                "endpointing": 400,
-            },
-            "firstMessage": scenario.get_opening_message(),
-            "endCallMessage": "Goodbye, have a great day!",
-            "backgroundDenoisingEnabled": True,
-        },
+
+    model: Dict[str, Any] = {
+        "provider": "openai",
+        "model": "gpt-4o-mini",
+        "messages": [{"role": "system", "content": scenario.get_system_prompt()}],
+        "temperature": 0.7,
+        "maxTokens": 150,
     }
+
+    assistant: Dict[str, Any] = {
+        "model": model,
+        "voice": {"provider": "openai", "voiceId": "nova"},
+        "transcriber": {
+            "provider": "deepgram",
+            "model": "nova-2",
+            "language": "en",
+            "endpointing": 300,
+        },
+        # Turn-detection: stop the agent from cutting the caller off mid-sentence.
+        # smartEndpointingPlan uses an AI model to tell a real pause from "I'm done",
+        # and the transcription plan waits longer when there's no end punctuation.
+        "startSpeakingPlan": {
+            "waitSeconds": 1.0,
+            "smartEndpointingPlan": {"provider": "livekit"},
+            "transcriptionEndpointingPlan": {
+                "onPunctuationSeconds": 0.1,
+                "onNoPunctuationSeconds": 1.8,
+                "onNumberSeconds": 0.5,
+            },
+        },
+        "firstMessage": scenario.get_opening_message(),
+        "endCallMessage": "Goodbye, have a great day!",
+        "backgroundDenoisingEnabled": True,
+    }
+
+    # Booking assistant gets the client-side calendar tool
+    if body.scenario_type == "booking_assistant":
+        model["tools"] = [_BOOK_APPOINTMENT_TOOL]
+        assistant["clientMessages"] = ["transcript", "tool-calls"]
+
+    return {"public_key": settings.VAPI_PUBLIC_KEY, "assistant": assistant}
 
 
 # ---------------------------------------------------------------------------
