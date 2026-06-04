@@ -1,25 +1,27 @@
-# Voice AI Agent
+# AI Voice Receptionist
 
-Businesses lose leads and miss appointments because manual follow-up doesn't scale. This AI voice agent handles outbound calls automatically — confirming appointments and qualifying leads — while answering any question a caller has about the business, without any human involvement.
+Businesses lose leads and miss appointments because manual phone follow-up doesn't scale. This **AI voice receptionist** handles business phone calls automatically — booking appointments into a live calendar, confirming existing appointments, and qualifying sales leads — while answering any question a caller has about the business, without any human involvement.
 
-Built on a full **STT → LLM → TTS** pipeline via [Vapi](https://vapi.ai), with a glassmorphism single-page dashboard for live call monitoring, real-time transcripts, automatic call summaries, and session history logs.
+Built on a full **STT → LLM → TTS** pipeline via [Vapi](https://vapi.ai), with a glassmorphism single-page dashboard for live call monitoring, real-time transcripts, a **live booking calendar**, automatic call summaries, and session history logs.
 
-**Two call goals, powered by a shared business knowledge base:**
-- **Appointment Reminder** — confirms, reschedules, or cancels a booking
-- **Lead Qualification** — qualifies prospects and books a demo or consultation
+**Three call modes, powered by a shared business knowledge base:**
+- **📅 Booking Assistant (inbound)** — the AI receptionist answers a call, checks real-time calendar availability, offers alternatives if a slot is taken, and **books the appointment live on screen** using function calling
+- **🔔 Appointment Reminder (outbound)** — confirms, reschedules, or cancels an existing booking
+- **📈 Lead Qualification (outbound)** — qualifies prospects and books a demo or consultation
 
-Every call is grounded in a **Business Knowledge Base** (services, hours, pricing, policies) injected into the agent's prompt — a RAG-style pattern that lets the agent answer *any* caller question about the business mid-call (hours, location, insurance, pricing). One-click **industry presets** (dental, medical, SaaS, real estate, salon) let you load a fully-configured sample business instantly for demos.
+Every call is grounded in a **Business Knowledge Base** (services, hours, pricing, policies) injected into the agent's prompt — a RAG-style pattern that lets the agent answer *any* caller question mid-call (hours, location, insurance, pricing). One-click **industry presets** — dental, medical, home services, law firm, fitness, SaaS, real estate, salon — load a fully-configured sample business instantly for demos.
 
 ---
 
 ## Live Demo Flow
 
 1. Open the web app at `http://localhost:8000`
-2. Select a campaign scenario and fill in the details
-3. Click **Initiate Call** — allow microphone access
-4. The AI agent speaks first and conducts the full conversation
-5. Watch the real-time transcript update as the conversation unfolds
-6. The agent closes the call naturally, or click **End Call** at any time
+2. Pick an **industry preset** (e.g. Salon) — it auto-fills the business profile, knowledge base, and call details
+3. Choose a **call mode** (Booking Assistant / Appointment Reminder / Lead Qualification)
+4. Click **Initiate Call** — allow microphone access
+5. Talk to the AI naturally; watch the **real-time transcript** and **live calendar** update as it works
+6. In Booking mode, when the AI books a slot it fills in on the calendar instantly ✨
+7. After the call, an automatic **summary** (outcome, next action, sentiment) is logged to the history table
 
 ---
 
@@ -29,17 +31,19 @@ Every call is grounded in a **Business Knowledge Base** (services, hours, pricin
 ┌──────────────────────────────────────────────────┐
 │                  Browser (UI)                     │
 │                                                   │
-│  Campaign form → POST /api/calls/web-config       │
+│  Setup form → POST /api/calls/web-config          │
 │       ↓ receives assistant config + public key    │
 │  Vapi Web SDK (WebRTC) ←──────────────────────┐  │
+│       ↑ "tool-calls" event (book_appointment)  │  │
+│  Live Calendar updates on screen ──────────────┘  │
 └────────────────────────────────────────────────┼──┘
                                                  │ WebRTC audio
                                                  ▼
 ┌──────────────────────────────────────────────────┐
 │                   Vapi Platform                   │
 │                                                   │
-│   Deepgram Nova-2  →  GPT-3.5-turbo  →  OpenAI   │
-│   (STT)               (LLM)            TTS Nova   │
+│   Deepgram Nova-2  →  GPT-4o-mini  →  OpenAI     │
+│   (STT)               (LLM + tools)    TTS Nova   │
 └──────────────────────────────────────────────────┘
                          ↑
 ┌──────────────────────────────────────────────────┐
@@ -47,9 +51,9 @@ Every call is grounded in a **Business Knowledge Base** (services, hours, pricin
 │                                                   │
 │  POST /api/calls/web-config                       │
 │    → builds assistant config from scenario        │
+│    → injects business KB + live availability      │
+│    → attaches book_appointment tool (booking mode)│
 │    → returns config + Vapi public key             │
-│                                                   │
-│  POST /webhooks/vapi-events  (optional push)      │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -59,11 +63,15 @@ Every call is grounded in a **Business Knowledge Base** (services, hours, pricin
 Your voice (browser mic)
   → Vapi WebRTC → Deepgram Nova-2 STT (real-time transcription)
                           ↓ (final transcript)
-                   GPT-3.5-turbo (full conversation history)
+                   GPT-4o-mini (conversation history + tools)
                           ↓ (text reply, max 150 tokens)
                    OpenAI TTS "nova" voice
                           ↓ (audio stream)
   You hear ← Vapi WebRTC ←────────────────────────
+
+  When booking: GPT-4o-mini calls book_appointment(name, service, time)
+  → delivered to the browser as a "tool-calls" event (client-side tool)
+  → frontend updates the live calendar instantly — no server round-trip
 ```
 
 ---
@@ -171,18 +179,27 @@ Every call combines **two inputs**:
 1. **Business Profile** (shared) — the business name + a free-text knowledge base (services, hours, location, pricing, policies, FAQs). This is injected into the agent's system prompt so it can answer *any* caller question about the business during the call.
 2. **Call Goal** — the objective of this specific call (appointment reminder or lead qualification) plus the call-specific details.
 
-This separation means one business profile powers both call types, and the agent stays "in character" for that business no matter what the caller asks.
+This separation means one business profile powers all call modes, and the agent stays "in character" for that business no matter what the caller asks.
 
-### Appointment Reminder
-**AI Persona:** Alex, scheduling coordinator
+### 📅 Booking Assistant (inbound)
+**AI Persona:** Sarah, AI receptionist
+
+1. Greets the caller and asks what they'd like to book
+2. Checks the **live calendar** (availability is injected into the prompt at call start, so the AI never offers a taken slot)
+3. Offers the nearest free slots if the requested time is unavailable
+4. Collects the caller's name, then calls the `book_appointment` function
+5. The slot is booked **live on the on-screen calendar** and confirmed back to the caller
+
+### 🔔 Appointment Reminder (outbound)
+**AI Persona:** Emma, scheduling coordinator
 
 1. Confirm speaking with the right customer
 2. Remind about the appointment (date, time, provider, service)
 3. Ask to confirm, reschedule, or cancel
 4. Answer any business questions from the knowledge base, then close warmly
 
-### Lead Qualification
-**AI Persona:** Jordan, sales representative
+### 📈 Lead Qualification (outbound)
+**AI Persona:** Olivia, sales representative
 
 1. Confirm speaking with the right lead
 2. Introduce the purpose of the call
@@ -191,7 +208,7 @@ This separation means one business profile powers both call types, and the agent
 5. Offer a demo if interest is confirmed, then close gracefully
 
 ### One-Click Demo Presets
-The UI ships with five fully-configured sample businesses — **Dental Clinic, Medical Center, SaaS Company, Real Estate Agency, Salon & Spa**. Selecting one auto-fills the business profile, knowledge base, and call details, so a prospect can experience a working agent for their industry in a single click.
+The UI ships with **eight** fully-configured sample businesses — **Dental Clinic, Medical Center, Home Services (HVAC/Plumbing), Law Firm, Fitness/Gym, SaaS Company, Real Estate Agency, and Salon & Spa**. Selecting one auto-fills the business profile, knowledge base, and call details, so a prospect can experience a working agent for *their* industry in a single click — ideal for personalized sales demos.
 
 ---
 
@@ -237,7 +254,7 @@ The original pipeline worked as follows:
 
 3. **WebRTC over PSTN** — Vapi's Web SDK enables direct browser-to-AI calls over WebRTC, which has no geographic restrictions, zero telephony cost, and lower latency than routing through a PSTN bridge. For a demo, it also lets the full conversation be observed in real time.
 
-4. **Same pipeline, less infrastructure** — Vapi internally uses Deepgram Nova-2 for STT, GPT-3.5-turbo for LLM, and OpenAI TTS for voice — the same quality tier as the original stack. The difference is that Vapi manages the real-time audio pipeline, not our server.
+4. **Same pipeline, less infrastructure** — Vapi internally uses Deepgram Nova-2 for STT, GPT-4o-mini for LLM, and OpenAI TTS for voice — the same quality tier as the original stack. The difference is that Vapi manages the real-time audio pipeline, not our server.
 
 The backend retains the original `VapiService` class pattern (mirrors the old `TwilioService`) and the scenario/system-prompt architecture is unchanged — only the transport layer was swapped.
 
@@ -259,13 +276,21 @@ PSTN calls require a purchased phone number with geographic coverage matching th
 
 FastAPI's async-first design, automatic OpenAPI docs, and Pydantic validation make it a natural fit for AI applications that mix REST endpoints with real-time processing. The async HTTP client (httpx) used by VapiService integrates cleanly without blocking threads.
 
+### Live booking via client-side function calling
+
+When the AI decides to book, it calls a `book_appointment` tool. This is configured **without a server URL**, so Vapi delivers the call straight to the browser as a `tool-calls` event — the frontend updates the calendar instantly with **no server round-trip and no public tunnel (ngrok) required**. Because client-side tools don't return data back to the model, the day's availability is **injected into the system prompt at call start**, so the AI always knows what's free without a live lookup. This keeps the whole demo runnable on plain `localhost`.
+
+### Reliable turn-taking (no mid-sentence cut-offs)
+
+Voice agents commonly interrupt callers who pause mid-thought. The assistant uses Vapi's `startSpeakingPlan` with **smart endpointing** (an AI model that distinguishes a real pause from "I'm finished"), a 1-second wait, and a longer no-punctuation threshold — so the caller can speak naturally without being cut off.
+
 ### Conversation context management
 
-The full conversation history (system prompt + all turns) is sent to GPT-3.5-turbo on every turn. `maxTokens=150` keeps responses short and voice-appropriate — long responses feel unnatural in spoken conversation.
+The full conversation history (system prompt + all turns) is sent to GPT-4o-mini on every turn. `maxTokens=150` keeps responses short and voice-appropriate — long responses feel unnatural in spoken conversation.
 
-### In-memory call state
+### In-memory state (calendar + call history)
 
-Call state lives in a Python dict keyed by a UUID `call_id`. This is intentionally simple for a single-process deployment. For production with multiple workers, replace with Redis.
+The booking calendar and call history live in browser/in-memory state — intentionally simple for a single-process demo. For production, the calendar would move to a real backend store (or Google Calendar via OAuth) and call state to Redis for multi-worker support.
 
 ---
 
