@@ -1,5 +1,10 @@
 # AI Voice Receptionist
 
+### 🔴 [Live Demo → ai-voice-receptionist-obgj.onrender.com](https://ai-voice-receptionist-obgj.onrender.com)
+*Pick an industry preset, choose a call mode, and talk to the AI receptionist live in your browser (microphone required).*
+
+---
+
 Businesses lose leads and miss appointments because manual phone follow-up doesn't scale. This **AI voice receptionist** handles business phone calls automatically — booking appointments into a live calendar, confirming existing appointments, and qualifying sales leads — while answering any question a caller has about the business, without any human involvement.
 
 Built on a full **STT → LLM → TTS** pipeline via [Vapi](https://vapi.ai), with a glassmorphism single-page dashboard for live call monitoring, real-time transcripts, a **live booking calendar**, automatic call summaries, and session history logs.
